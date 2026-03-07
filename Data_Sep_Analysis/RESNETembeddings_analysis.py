@@ -607,3 +607,48 @@ if __name__ == "__main__":
     run_qualitative_visualization(reduced_embs, aligned_labels, ordered_names_list, CONFIG)
     
     print_sep("Pipeline Complete")
+
+# ==============================================================================
+# 8. NEXT LOGICAL STEP: EXPORTING FINALIZED ANALYZED FEATURES (FIXED NAMES)
+# ==============================================================================
+print("\n" + "="*60)
+print("OPTIONAL NEXT STEP: EXPORTING ANALYZED FEATURES FOR OPTIMIZATION")
+print("="*60)
+
+# 1. Define export path based on teacher weight directory
+# Assumes the user wants features saved near the teacher model weights.
+# We access os from the imports already established in main.
+WEIGHTS_DIR = os.path.dirname(CONFIG['WEIGHTS_PATH'])
+EXPORT_FILENAME = "plantvillage_whole_features_analyzed_523d.npz"
+EXPORT_PATH = os.path.join(WEIGHTS_DIR, EXPORT_FILENAME)
+
+# 2. Confirmation prompt (to avoid accidental overwrites)
+# sys is imported from main for flush/read.choice.
+sys.stdout.write(f"\nDo you wish to export the analyzed, PCA-reduced embeddings,\ntrue labels, and ordered class names to the following compressed NumPy file?\n({EXPORT_PATH})\n[y/N]: ")
+sys.stdout.flush()
+user_choice = sys.stdin.readline().strip().lower()
+
+if user_choice in ['y', 'yes']:
+    print(f"Compressing and exporting features...")
+    
+    # Use numpy's compressed save function for efficiency.
+    # We corrected the variable names here to match the scope of main.
+    np.savez_compressed(
+        EXPORT_PATH,
+        # DATA VARIABLES FROM THE REFACTORED MAIN SCOPE:
+        reduced_embeddings=reduced_embs,  # matrix (N x 523)
+        true_labels=aligned_labels,       # vector (N)
+        # Convert list to numpy array for saving
+        ordered_class_names=np.array(ordered_names_list) # list of 15 strings
+    )
+    
+    print("\n[SUCCESS] Analyzed features exported successfully.")
+    print("For future analysis, you can bypass this entire script and load")
+    print("the features instantly using this command:")
+    print(f"data = np.load(r'{EXPORT_PATH}')")
+else:
+    print("\nFeature export skipped.")
+
+print("\n" + "="*60)
+print("PIPELINE COMPLETE & OPTIMIZATION SAVED")
+print("="*60)
